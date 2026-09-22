@@ -3,3 +3,7 @@
 GitHub Pages static site. `index.html` downloads the compressed ranking dataset on first load and computes rankings in the browser.
 
 Data snapshot: 2026-09-22.
+
+## TODO
+- [ ] check ranking of a specific paper
+
