@@ -16,4 +16,4 @@
 <details class="coverage"><summary>月份数据覆盖</summary><div class="table-wrap"><table><thead><tr><th>月份</th><th>CS 投稿</th><th>有效响应</th><th>S2 未找到</th><th>ID 不一致</th><th>空参考文献</th></tr></thead><tbody id="coverage"></tbody></table></div></details>
 <details><summary>统计口径与数据限制</summary><div class="method"><p>只统计 arXiv CS → arXiv CS 的引用，ID 去除版本号。source 与 target 均按 arXiv OAI-PMH 的 v1 提交日期筛选。目标限定在本文件收集的五年范围内。</p><p>引用日期使用引用方的 v1 提交日期；每个 source→target 只计一次。归一化分数 = <code>Σ(日新增引用 / 当日全部 CS 投稿 × 1000)</code>。</p><p>S2 未找到、空参考文献、ID 不一致和 919 个反复 429 的 source 会造成低估；日期范围的最后一天可能属于未完整采集日。</p></div></details></div><footer>arXiv OAI-PMH · Semantic Scholar Graph API</footer></main>
 <dialog id="detail"><div class="dialog-head"><div><h2 id="detail-title"></h2><div class="muted" id="detail-id"></div></div><button type="button" id="close-detail" aria-label="关闭">关闭</button></div><canvas id="chart"></canvas><div class="month-table"><table><thead><tr><th>日期</th><th>新增引用</th><th>CS 投稿量</th><th>归一化引用</th></tr></thead><tbody id="detail-days"></tbody></table></div></dialog>
-<script src="./app.js"></script></body></html>
+<script src="./app.js?v=3"></script></body></html>
