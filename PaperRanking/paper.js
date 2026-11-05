@@ -1,1 +1,67 @@
-'use strict';const $=id=>document.getElementById(id),fmt=n=>n.toLocaleString('en-US');let D,selected=null,timer;function dateAdd(d,n){const x=new Date(d+'T00:00:00Z');x.setUTCDate(x.getUTCDate()+n);return x.toISOString().slice(0,10)}function esc(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}function dayCount(p,a,b){let n=0,score=0;for(let i=0;i<p[3].length;i+=2){const d=p[3][i],c=p[3][i+1];if(d>=a&&d<=b){n+=c;score+=c*1000/D.denominators[d]}}return{n,score}}function updateQuick(box,startId,endId){const s=$(startId).value,e=$(endId).value;$(box).querySelectorAll('button').forEach(b=>{const on=s&&e&&s===dateAdd(e,-Number(b.dataset.days)+1);b.classList.toggle('active',on);b.setAttribute('aria-pressed',String(on))})}function updateState(){updateQuick('paper-quick','paper-start','paper-end');updateQuick('citation-quick','citation-start','citation-end')}function schedule(){clearTimeout(timer);timer=setTimeout(render,80)}function renderCandidates(){const q=$('query').value.trim().toLocaleLowerCase(),box=$('candidates');box.replaceChildren();if(!q){return}const hits=D.papers.filter(p=>(p[0]+' '+p[2]).toLocaleLowerCase().includes(q)).slice(0,12);if(!hits.length){box.innerHTML='<div class="empty">没有匹配的论文</div>';return}hits.forEach(p=>{const b=document.createElement('button');b.className='candidate';b.innerHTML=esc(p[2])+'<small>'+esc(p[0])+' · v1 '+p[1]+'</small>';b.onclick=()=>{selected=p;$('query').value=p[0]+' '+p[2];box.replaceChildren();render()};box.append(b)})}function render(){updateState();renderCandidates();const ps=$('paper-start').value,pe=$('paper-end').value,cs=$('citation-start').value,ce=$('citation-end').value;if(!selected){$('result').innerHTML='<div class="empty">先搜索并选择一篇论文。</div>';return}if(ps>pe||cs>ce||ps<D.range[0]||pe>=D.range[1]||cs<D.range[0]||ce>=D.range[1]){ $('error').textContent='请选择有效日期范围。';return}$('error').textContent='';const a=D.days.findIndex(d=>d>=cs),next=D.days.findIndex(d=>d>ce),b=next<0?D.days.length-1:next-1;const target=dayCount(selected,a,b);let population=0,above=0,rank=1,near=[];for(const p of D.papers){if(p[1]<ps||p[1]>pe)continue;population++;const v=dayCount(p,a,b);if(v.score>target.score||v.score===target.score&&v.n>target.n||v.score===target.score&&v.n===target.n&&p[0]<selected[0])above++;if(Math.abs(v.score-target.score)<Math.max(.001,target.score*.08))near.push({p,v})}rank=above+1;near.sort((x,y)=>y.v.score-x.v.score||y.v.n-x.v.n||x.p[0].localeCompare(y.p[0]));near=near.filter(x=>x.p[0]===selected[0]||Math.abs(x.v.score-target.score)<Math.max(.001,target.score*.08)).slice(0,9);$('result').innerHTML='<div class="selected"><h2>'+esc(selected[2])+'</h2><div class="muted">'+esc(selected[0])+' · v1 '+selected[1]+' · 发表季度 '+selected[1].slice(0,4)+'Q'+Math.ceil(+selected[1].slice(5,7)/3)+'</div><div class="stats"><div class="stat"><strong>第 '+fmt(rank)+'</strong><span>/ '+fmt(population)+' 篇</span></div><div class="stat"><strong>'+target.score.toFixed(3)+'</strong><span>归一化分数</span></div><div class="stat"><strong>'+fmt(target.n)+'</strong><span>新增引用</span></div><div class="stat"><strong>'+((1-rank/population)*100).toFixed(2)+'%</strong><span>超过论文比例</span></div></div><p class="muted">发表窗口：'+ps+' 至 '+pe+'；被引窗口：'+cs+' 至 '+ce+'</p><div class="neighbors"><table><thead><tr><th>排名</th><th>论文</th><th>新增引用</th><th>分数</th></tr></thead><tbody>'+near.map(x=>{const r=x.p[0]===selected[0]?rank:'—';return '<tr class="'+(x.p[0]===selected[0]?'me':'')+'"><td>'+r+'</td><td><a href="https://arxiv.org/abs/'+encodeURIComponent(x.p[0])+'" target="_blank">'+esc(x.p[2])+'</a><br><small>'+esc(x.p[0])+'</small></td><td>'+fmt(x.v.n)+'</td><td>'+x.v.score.toFixed(3)+'</td></tr>'}).join('')+'</tbody></table></div></div>'}async function boot(){try{const c=await caches.open('arxiv-ranking-2026-09-22');let r=await c.match('./ranking-data-daily.json.gz');if(!r){r=await fetch('./ranking-data-daily.json.gz');if(!r.ok)throw Error('数据下载失败');await c.put('./ranking-data-daily.json.gz',r.clone())}D=JSON.parse(await new Response(r.body.pipeThrough(new DecompressionStream('gzip'))).text());const last=dateAdd(D.range[1],-1);for(const id of ['paper-start','paper-end','citation-start','citation-end']){$(id).min=D.range[0];$(id).max=last}$('paper-start').value=dateAdd(last,-89);$('paper-end').value=last;$('citation-start').value=dateAdd(last,-89);$('citation-end').value=last;for(const id of ['paper-start','paper-end','citation-start','citation-end'])$(id).onchange=schedule;$('query').oninput=schedule;document.querySelectorAll('.quick button').forEach(b=>b.onclick=()=>{const paper=b.closest('#paper-quick'),s=paper?'paper-start':'citation-start',e=paper?'paper-end':'citation-end';$(s).value=dateAdd($(e).value,-Number(b.dataset.days)+1);schedule()});$('loading').hidden=true;$('app').hidden=false;render()}catch(e){$('loading').textContent='数据载入失败：'+e.message}}boot();
+import {$, t, fmt, el, initLanguage, initDates, updateDates, validBounds, bounds, rankPapers, snapshot, loadData, showLoadError, normalize, queryText, paperLink, rankingTable} from './common.js?v=20261106-1';
+let D, selected, timer, rows = [], rankKey = '';
+initLanguage(() => { if (D) { showCandidates(); render(); } });
+function showCandidates() {
+  const box = $('candidates'), query = queryText($('query').value); box.replaceChildren(); $('candidate-status').textContent = '';
+  if (!query || selected) return;
+  const hits = []; let count = 0;
+  for (const p of D.papers) if (normalize(p[0] + ' ' + p[2]).includes(query)) { count++; if (hits.length < 20) hits.push(p); }
+  // Prefer an exact ID when multiple titles also contain the same digits.
+  hits.sort((a,b) => Number(b[0] === query) - Number(a[0] === query));
+  $('candidate-status').textContent = count ? t('candidates',{count:fmt(count),shown:hits.length}) : t('searchEmpty');
+  for (const p of hits) {
+    const button = el('button', p[2], 'candidate'); button.type = 'button';
+    button.append(el('small', p[0] + ' · v1 ' + p[1]));
+    button.onclick = () => { selected = p; $('query').value = p[0]; box.replaceChildren(); $('candidate-status').textContent = ''; render(); };
+    box.append(button);
+  }
+}
+function schedule() { clearTimeout(timer); timer = setTimeout(render,180); }
+function render() {
+  if (!D) return;
+  snapshot(D); updateDates(D); const container = $('result'); container.replaceChildren();
+  if (!validBounds(D)) { $('error').textContent = t('invalid'); return; }
+  $('error').textContent = '';
+  if (!selected) { container.append(el('p', t('choose'), 'empty')); return; }
+  const b = bounds(), card = el('section', undefined, 'selected'), title = el('h2'); title.append(paperLink(selected));
+  card.append(el('p',t('selected'),'hint'),title,el('p',selected[0] + ' · v1 ' + selected[1],'muted'));
+  const change = el('button',t('change')); change.onclick = () => { selected = null; $('query').focus(); showCandidates(); render(); }; card.append(change);
+  container.append(card);
+  if (selected[1] < b['paper-start'] || selected[1] > b['paper-end']) {
+    card.append(el('p',t('outside',{date:selected[1]}),'outside'));
+    const include = el('button',t('include'));
+    include.onclick = () => {
+      if (selected[1] < $('paper-start').value) $('paper-start').value = selected[1];
+      if (selected[1] > $('paper-end').value) $('paper-end').value = selected[1]; render();
+    };
+    card.append(include); return;
+  }
+  const key = JSON.stringify(b);
+  if (key !== rankKey) {
+    rows = rankPapers(D,b['paper-start'],b['paper-end'],b['citation-start'],b['citation-end']); rankKey = key;
+  }
+  const index = rows.findIndex(r => r.paper[0] === selected[0]);
+  if (index < 0) { card.append(el('p',t('noPopulation'),'empty')); return; }
+  const target = rows[index];
+  card.append(el('p',t('position',{rank:fmt(index+1),total:fmt(rows.length)}),'position'));
+  card.append(el('p',t('percentile',{percent:((rows.length-index-1)/rows.length*100).toFixed(2)}),'muted'));
+  const metrics = el('div',undefined,'metrics');
+  for (const [value, label] of [[fmt(target.raw),'citations'],[target.score.toFixed(3),'score']]) {
+    const metric = el('div',undefined,'metric'); metric.append(el('strong',value),el('span',t(label))); metrics.append(metric);
+  }
+  card.append(metrics,el('p',t('rangeSummary',{ps:b['paper-start'],pe:b['paper-end'],cs:b['citation-start'],ce:b['citation-end']}),'hint'));
+  const start = Math.max(0,index-3), end = Math.min(rows.length,index+4);
+  container.append(el('h2',t('nearby')),rankingTable(rows.slice(start,end),start,selected[0]));
+}
+(async () => {
+  try {
+    D = await loadData(); initDates(D,schedule);
+    $('query').addEventListener('input', () => {
+      selected = null; clearTimeout(timer); timer = setTimeout(() => { showCandidates(); render(); },180);
+    });
+    $('loading').hidden = true; $('app').hidden = false;
+    const id = queryText(new URLSearchParams(location.search).get('id') || '');
+    if (id) { $('query').value = id; selected = D.papers.find(p => p[0] === id); if (!selected) showCandidates(); }
+    render();
+  } catch (error) { showLoadError(error); }
+})();

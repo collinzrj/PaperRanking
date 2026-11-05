@@ -1,0 +1,16 @@
+{
+  "file": "ranking-data-daily.json.gz",
+  "sha256": "ad2ae62a0574802660fa2e74cc52f61e6031d4671f4572ac496c782e8d2cb103",
+  "bytes": 35961950,
+  "generated_at": "2026-11-05T20:23:09.759456+00:00",
+  "requested_refresh_date": "2026-11-06",
+  "metadata_harvest_until_utc": "2026-11-05",
+  "latest_v1_date": "2026-11-04",
+  "range": [
+    "2021-09-01",
+    "2026-11-06"
+  ],
+  "papers": 661604,
+  "cs_edges": 6169072,
+  "unresolved_sources": 919
+}
