@@ -2,17 +2,19 @@
 
 Explore citation activity among arXiv computer-science papers using exact publication and citation date windows.
 
-**[Leaderboard](https://collinzrj.github.io/PaperRanking/)** · **[Individual paper lookup](https://collinzrj.github.io/PaperRanking/paper.html)**
+**[Open the website](https://collinzrj.github.io/PaperRanking/)** · Link to a paper with `?paper=<arXiv ID>`, for example [`?paper=2402.03300`](https://collinzrj.github.io/PaperRanking/?paper=2402.03300)
 
-The website opens in English. Use the **中文 / English** button on either page to switch languages; your preference is saved in your browser. Paper titles remain in their original language.
+The website opens in English. Use the **中文 / English** button to switch languages; your preference is saved in your browser. Paper titles remain in their original language.
 
 ## Features
 
 - A global Top 100 across the selected publication window.
 - Independent publication and citation date filters, including quick date presets.
 - Case-insensitive title-phrase and arXiv ID search.
-- Individual paper rank against **all** papers in the publication window, with exact neighboring ranks. Papers outside the window are clearly identified.
-- Responsive paper cards on narrow screens and tables on larger screens.
+- Search results keep each paper's rank among **all** papers in the publication window.
+- Select a paper to see its exact rank, percentile and neighboring ranks, and change its citation window independently, for example to compare quarters. Papers outside the publication window are clearly identified.
+- Calendar shortcuts for 2022–2025: full year, halves and quarters.
+- A responsive card grid.
 - JSON export from the leaderboard and daily citation details.
 - Compressed data downloaded once per snapshot, checked using SHA-256, and stored in browser Cache Storage. If storage is unavailable, loading still works. A small manifest identifies data updates.
 
@@ -34,9 +36,9 @@ A refresh requested in Asia/Shanghai can fall on the previous UTC date. arXiv al
 The GitHub Pages publishing source is **main / root**. The repository root is the deployed site:
 
 ```text
-index.html                    Leaderboard
-paper.html                    Individual paper lookup
-app.js, paper.js, common.js    Browser code and English/Chinese strings
+index.html                    Leaderboard and paper rank dialog
+paper.html                    Redirect for old paper lookup links
+app.js, common.js             Browser code and English/Chinese strings
 style.css                     Shared responsive styles
 dataset.json                  Snapshot metadata and content hash
 ranking-data-daily.json.gz     Compressed dataset

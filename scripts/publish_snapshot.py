@@ -28,6 +28,6 @@ manifest = {
 (PROJECT / 'dataset.json').write_text(json.dumps(manifest,indent=2)+'\n')
 mirror = PROJECT / 'PaperRanking'
 mirror.mkdir(exist_ok=True)
-for name in ['index.html','paper.html','app.js','paper.js','common.js','style.css','dataset.json','ranking-data-daily.json.gz','README.md','.nojekyll']:
+for name in ['index.html','paper.html','app.js','common.js','style.css','dataset.json','ranking-data-daily.json.gz','README.md','.nojekyll']:
     shutil.copy2(PROJECT / name,mirror / name)
 print(json.dumps(manifest,indent=2))
